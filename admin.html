@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow RP Admin Panel</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0b0f14;color:#fff;margin:0}
+header{background:#111;padding:15px;text-align:center;border-bottom:2px solid cyan}
+.container{max-width:1100px;margin:auto;padding:20px}
+.box{background:#151b22;border:1px solid cyan;border-radius:12px;padding:15px;margin-bottom:20px}
+input,select,button{padding:10px;margin:5px 0;border-radius:8px;border:none}
+input,select{width:100%}
+button{cursor:pointer}
+.login{max-width:400px;margin:100px auto}
+.card{border:1px solid #444;padding:10px;border-radius:10px;margin-top:10px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login box">
+<h2>🔐 Shadow RP Admin Login</h2>
+<input type="password" id="pass" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+</div>
+
+<div id="panel" class="hidden">
+<header><h1>🎮 Shadow RP Admin Panel</h1></header>
+
+<div class="container">
+
+<div class="box">
+<h2>➕ Add Product</h2>
+<input id="pname" placeholder="Product Name">
+<input id="pprice" type="number" placeholder="Price">
+<select id="pcat">
+<option value="cars">Cars</option>
+<option value="houses">Houses</option>
+<option value="rare">Rare Items</option>
+</select>
+<button onclick="addProduct()">Add Product</button>
+</div>
+
+<div class="box">
+<h2>📦 Products</h2>
+<div id="products"></div>
+</div>
+
+<div class="box">
+<h2>🧾 Orders</h2>
+<div id="orders"></div>
+</div>
+
+<div class="box">
+<h2>👑 Developer Controls</h2>
+<input id="adminName" placeholder="Admin Name">
+<button onclick="blockAdmin()">🚫 Block Admin</button>
+<button onclick="unblockAdmin()">🔓 Unblock Admin</button>
+<div id="blocked"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+const ADMIN_PASSWORD="ShadowRP123";
+const DEV_PASSWORD="Developer123";
+
+function login(){
+ let p=document.getElementById('pass').value;
+ if(p===ADMIN_PASSWORD || p===DEV_PASSWORD){
+  loginScreen.style.display='none';
+  panel.classList.remove('hidden');
+  loadProducts();
+  loadOrders();
+  loadBlocked();
+ } else {
+  msg.textContent='Wrong password';
+ }
+}
+
+let products=JSON.parse(localStorage.getItem('products')||'[]');
+
+function addProduct(){
+ products.push({
+  name:pname.value,
+  price:pprice.value,
+  category:pcat.value
+ });
+ localStorage.setItem('products',JSON.stringify(products));
+ loadProducts();
+}
+
+function deleteProduct(i){
+ products.splice(i,1);
+ localStorage.setItem('products',JSON.stringify(products));
+ loadProducts();
+}
+
+function loadProducts(){
+ products=JSON.parse(localStorage.getItem('products')||'[]');
+ productsDiv='';
+ products.forEach((p,i)=>{
+  productsDiv+=`<div class="card">${p.name} - ₹${p.price} (${p.category}) <button onclick="deleteProduct(${i})">Delete</button></div>`;
+ });
+ document.getElementById('products').innerHTML=productsDiv;
+}
+
+function loadOrders(){
+ let orders=JSON.parse(localStorage.getItem('orders')||'[]');
+ let out='';
+ orders.forEach((o,i)=>{
+ out+=`<div class="card">
+ Order #${o.id||i}<br>
+ Status: <b>${o.status||'Pending'}</b><br>
+ Total: ₹${o.total||0}<br>
+ <button onclick="acceptOrder(${i})">✅ Accept</button>
+ <button onclick="rejectOrder(${i})">❌ Reject</button>
+ </div>`;
+ });
+ document.getElementById('orders').innerHTML=out;
+}
+
+function acceptOrder(i){
+ let orders=JSON.parse(localStorage.getItem('orders')||'[]');
+ orders[i].status='Accepted';
+ orders[i].notification='✅ Your order has been accepted.';
+ localStorage.setItem('orders',JSON.stringify(orders));
+ loadOrders();
+}
+
+function rejectOrder(i){
+ let orders=JSON.parse(localStorage.getItem('orders')||'[]');
+ orders[i].status='Rejected';
+ orders[i].notification='❌ Your order has been rejected.';
+ localStorage.setItem('orders',JSON.stringify(orders));
+ loadOrders();
+}
+
+let blockedAdmins=JSON.parse(localStorage.getItem('blockedAdmins')||'[]');
+
+function blockAdmin(){
+ blockedAdmins.push(adminName.value);
+ localStorage.setItem('blockedAdmins',JSON.stringify(blockedAdmins));
+ loadBlocked();
+}
+
+function unblockAdmin(){
+ blockedAdmins=blockedAdmins.filter(x=>x!==adminName.value);
+ localStorage.setItem('blockedAdmins',JSON.stringify(blockedAdmins));
+ loadBlocked();
+}
+
+function loadBlocked(){
+ let html='<h3>Blocked Admins</h3>';
+ blockedAdmins.forEach(a=>html+=`<div>${a}</div>`);
+ document.getElementById('blocked').innerHTML=html;
+}
+</script>
+
+</body>
+</html>
