@@ -2,6 +2,9 @@ require('dotenv').config();
 module.exports = {
   token: process.env.DISCORD_TOKEN,
   clientId: process.env.CLIENT_ID,
+  homepageUrl: process.env.APP_HOMEPAGE_URL || 'http://localhost:3000',
+  privacyPolicyUrl: process.env.APP_PRIVACY_POLICY_URL || '',
+  termsOfServiceUrl: process.env.APP_TERMS_OF_SERVICE_URL || '',
   guildId: process.env.GUILD_ID || null,
   owners: (process.env.OWNER_IDS || '').split(',').map(s => s.trim()).filter(Boolean),
   database: {
